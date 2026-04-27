@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Dream Walker</string>
+    <string name="title_activity_main">Dream Walker</string>
+    <string name="package_name">com.dreamwalker.app</string>
+    <string name="custom_url_scheme">com.dreamwalker.app</string>
+</resources>

@@ -1,0 +1,6 @@
+{
+  "appId": "com.dreamwaker.app",
+  "appName": "Dreamwaker",
+  "webDir": "dist",
+  "bundledWebRuntime": false
+}

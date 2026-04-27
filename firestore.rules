@@ -1,0 +1,69 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Phase 3: Primitive Definition
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+    function isVerifiedUser() { return isSignedIn() && request.auth.token.email_verified == true; }
+
+    // User Validation
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'vitalCoins', 'totalSteps', 'dailySteps']) &&
+             data.uid == request.auth.uid &&
+             data.vitalCoins is number &&
+             data.totalSteps is number &&
+             data.dailySteps is number;
+    }
+
+    // Transaction Validation
+    function isValidTransaction(data) {
+      return data.keys().hasAll(['userId', 'type', 'amount', 'status', 'timestamp']) &&
+             data.userId == request.auth.uid &&
+             data.type in ['reward', 'withdrawal', 'bonus'] &&
+             data.amount is number &&
+             data.status in ['completed', 'pending', 'rejected'] &&
+             data.timestamp == request.time;
+    }
+
+    // 1. The Master Gate
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false; // Users can only fetch their own profile by ID
+      
+      allow create: if isOwner(userId) && isValidUser(incoming());
+      
+      allow update: if isOwner(userId) && isValidUser(incoming()) && (
+        // Action: Update Steps
+        (incoming().diff(existing()).affectedKeys().hasOnly(['dailySteps', 'totalSteps', 'lastStepUpdate']) &&
+         incoming().totalSteps >= existing().totalSteps) ||
+        // Action: Reward applied
+        (incoming().diff(existing()).affectedKeys().hasOnly(['vitalCoins']) &&
+         incoming().vitalCoins >= existing().vitalCoins)
+      );
+    }
+
+    match /users/{userId}/transactions/{txId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidTransaction(incoming());
+    }
+
+    match /users/{userId}/adWatches/{watchId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && incoming().timestamp == request.time;
+    }
+
+    match /leaderboard/{entryId} {
+      allow list: if isSignedIn(); // Public leaderboard
+      allow get: if isSignedIn();
+      allow create, update: if false; // System only or handled by Cloud Functions
+    }
+  }
+}

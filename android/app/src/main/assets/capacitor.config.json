@@ -1,0 +1,6 @@
+{
+	"appId": "com.dreamwalker.app",
+	"appName": "Dream Walker",
+	"webDir": "dist",
+	"bundledWebRuntime": false
+}

@@ -1,0 +1,77 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile and fitness stats",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "vitalCoins": { "type": "number", "description": "Current balance of SATS" },
+        "totalSteps": { "type": "number", "description": "Cumulative steps tracked" },
+        "dailySteps": { "type": "number", "description": "Steps tracked today" },
+        "streakDays": { "type": "number", "description": "Consecutive days meeting goals" },
+        "lastStepUpdate": { "type": "string", "format": "date-time" },
+        "isVerified": { "type": "boolean" }
+      },
+      "required": ["uid", "vitalCoins", "totalSteps", "dailySteps"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Ledger entry for rewards or withdrawals",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "type": { "type": "string", "enum": ["reward", "withdrawal", "bonus"] },
+        "amount": { "type": "number" },
+        "currency": { "type": "string", "description": "SATS" },
+        "status": { "type": "string", "enum": ["completed", "pending", "rejected"] },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "description": { "type": "string" }
+      },
+      "required": ["userId", "type", "amount", "status", "timestamp"]
+    },
+    "AdWatch": {
+      "title": "Ad Watch",
+      "description": "Record of ad views for bonus multipliers",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "bonusApplied": { "type": "boolean" }
+      },
+      "required": ["userId", "timestamp"]
+    },
+    "LeaderboardEntry": {
+      "title": "Leaderboard Entry",
+      "description": "Aggregated daily or weekly stats for competition",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "username": { "type": "string" },
+        "steps": { "type": "number" },
+        "period": { "type": "string", "enum": ["daily", "weekly"] }
+      },
+      "required": ["userId", "username", "steps", "period"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Private user profile and balance"
+    },
+    "/users/{userId}/transactions/{transactionId}": {
+      "schema": "Transaction",
+      "description": "User's financial history"
+    },
+    "/users/{userId}/adWatches/{watchId}": {
+      "schema": "AdWatch",
+      "description": "Log of ad interactions"
+    },
+    "/leaderboard/{entryId}": {
+      "schema": "LeaderboardEntry",
+      "description": "Public leaderboard data"
+    }
+  }
+}

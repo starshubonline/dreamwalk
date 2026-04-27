@@ -1,0 +1,12 @@
+{
+  "name": "Remix: Dreamwaker",
+  "description": "A premium Move-to-Earn fitness platform where your steps earn you Bitcoin Sats. Features AI-powered workouts, social leaderboards, and gamified health tracking.",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "Fitness Tracking",
+    "AI Wellness",
+    "Social Leaderboards"
+  ]
+}
